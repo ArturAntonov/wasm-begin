@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WebAssembly Application</title>
+</head>
+<body>
+<div id="container"></div>
+<div id="debugger"></div>
+<script src="hello.js"></script>
+<script>
+    // Добавление функции дебагера, которая не прибавляет производительности, но потестить самое то
+    function debug(value) {
+        const p = document.createElement('p');
+        p.innerHTML = "Debug: " + value;
+        document.getElementById("debugger").appendChild(p);
+    }
+    if ("WebAssembly" in window) {
+
+        // Создаем блок памяти
+        const num_vals = 8; // количество элементов в массиве
+        const importObject = {env: {_Z5debugi: debug,}}
+        WebAssembly.instantiateStreaming(fetch('hello.wasm'), importObject)
+            .then(result => {
+                // Получаем адрес массива из wasm
+                const offset = result.instance.exports.getOffset();
+                // Создаем массив обращаясь к буферу памяти модуля wasm
+                const numbers = new Uint32Array(result.instance.exports.memory.buffer, offset, num_vals);
+                // Инициализируем массив
+                for (let i = 0; i < num_vals; i++) {
+                    numbers[i] = i + 1;
+                }
+                // Вычисляем сумму элементов массива
+                const sum = result.instance.exports.sum();
+                document.getElementById("container").innerHTML = "Sum: " + sum;
+            })
+            .catch(console.error)
+    }
+</script>
+</body>
+</html>

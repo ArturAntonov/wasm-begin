@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WASM in JS</title>
+</head>
+<body>
+<div id="container">
+</div>
+<script>
+    if ("WebAssembly" in window) {
+        WebAssembly.instantiateStreaming(fetch("hello.wasm"))
+            // Вариант использования функции, определенной внутри wasm
+            .then(result =>
+                document.getElementById("container").innerHTML =
+                    //  Вызов функции, которая определена в wasm файле
+                    "Result: " + result.instance.exports.add(2, 5)
+            )
+            .catch(console.error);
+    }
+</script>
+</body>
+</html>
